@@ -15,8 +15,13 @@ class Transaction():
         self.send = send
         self.datetime = datetime.datetime.now()
 
+    @property
+    def rate(self):
+        # This will only work on seller's transactions!
+        return self.recv / self.send
+
     def __str__(self) -> str:
-        return "{:0.2f} {} for {:0.2f} {} @ {}".format(self.recv, self.asset1, self.send, self.asset2, self.datetime)
+        return "rate: {:0.3f}; {:0.2f} {} for {:0.2f} {} @ {}".format(self.rate, self.recv, self.asset1, self.send, self.asset2, self.datetime)
 
     def __repr__(self) -> str:
         return str(self)
