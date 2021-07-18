@@ -37,6 +37,9 @@ class Offer():
     def __str__(self) -> str:
         return "(r: {1:0.3f} vol: {0:0.2f})".format(self.vol, self.r)
 
+    def __lt__(self, other):
+        return (self.r < other.r)
+
     def __repr__(self) -> str:
         return str(self)
 
@@ -47,8 +50,8 @@ class Market():
         self.asset1 = asset1 
         self.asset2 = asset2 
 
-        self.s: List[Tuple[uuid.UUID, Offer]] = []
-        self.d: List[Tuple[uuid.UUID, Offer]] = [] 
+        self.s: List[Offer] = []
+        self.d: List[Offer] = [] 
 
         self.transactions: List[Transaction] = []
     
@@ -60,16 +63,16 @@ class Market():
         offer = Offer(self.id, vol, r, handle)
 
         if op in 'sell':
-            heapq.heappush(self.s, [offer.r, offer])
+            heapq.heappush(self.s, offer)
         else:
-            heapq.heappush(self.d, [offer.r, offer])
+            heapq.heappush(self.d, offer)
 
         ps = 0
         pd = len(self.d) - 1
 
         while ps < len(self.s) and pd >= 0:
-            seller = self.s[ps][1]
-            buyer = self.d[pd][1]
+            seller = self.s[ps]
+            buyer = self.d[pd]
 
             (tseller, tbuyer, status) = self.match(seller, buyer)
 
@@ -84,11 +87,11 @@ class Market():
             # equal trade, delete demand and supply
             # shortage supply, delete supply
             if status in {0, 1}: 
-                self.d.remove(self.d[pd])
+                self.d.remove(buyer)
                 pd -= 1
 
             if status in {1, 2}:
-                self.s.remove(self.s[ps])
+                self.s.remove(seller)
                 ps += 1
 
         return offer.id
